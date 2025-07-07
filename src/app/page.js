@@ -56,6 +56,19 @@ export default function Home() {
     setLoading(false);
   };
 
+  // Decrement count
+  const handleDecrement = async () => {
+    setLoading(true);
+    const res = await fetch("/api/count", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    });
+    const data = await res.json();
+    setCount(data.value);
+    setLoading(false);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 gap-8">
       <h1 className="text-2xl font-bold">Simple Counter App</h1>
@@ -87,13 +100,22 @@ export default function Home() {
         <div className="flex flex-col items-center gap-4">
           <div className="text-lg">Hello, <b>{username}</b>!</div>
           <div className="text-4xl font-mono">{loading ? "..." : count}</div>
-          <button
-            onClick={handleIncrement}
-            className="bg-green-500 text-white px-4 py-2 rounded text-lg"
-            disabled={loading}
-          >
-            +1
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleDecrement}
+              className="bg-red-500 text-white px-4 py-2 rounded text-lg"
+              disabled={loading}
+            >
+              -1
+            </button>
+            <button
+              onClick={handleIncrement}
+              className="bg-green-500 text-white px-4 py-2 rounded text-lg"
+              disabled={loading}
+            >
+              +1
+            </button>
+          </div>
           <a
             href={`/profile?username=${username}`}
             className="text-blue-600 underline mt-2"

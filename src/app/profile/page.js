@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
-export default function ProfilePage() {
+function ProfileContent() {
   const searchParams = useSearchParams();
   const username = searchParams.get("username");
   const [history, setHistory] = useState([]);
@@ -20,7 +21,7 @@ export default function ProfilePage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 gap-8">
       <h1 className="text-2xl font-bold">Profile: {username}</h1>
-      <a href="/" className="text-blue-600 underline">Back to Home</a>
+      <Link href="/" className="text-blue-600 underline">Back to Home</Link>
       <h2 className="text-lg font-semibold mt-4">Count History</h2>
       {loading ? (
         <div>Loading...</div>
@@ -46,5 +47,13 @@ export default function ProfilePage() {
         </table>
       )}
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ProfileContent />
+    </Suspense>
   );
 } 
