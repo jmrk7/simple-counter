@@ -80,7 +80,7 @@ export default function Home() {
         >
           <option value="">Select profile</option>
           {profiles.map((p) => (
-            <option key={p._id} value={p.username}>
+            <option key={p.id} value={p.username}>
               {p.username}
             </option>
           ))}

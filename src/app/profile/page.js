@@ -38,7 +38,7 @@ function ProfileContent() {
               <tr><td colSpan={2} className="text-center">No data</td></tr>
             )}
             {history.map((item) => (
-              <tr key={item._id}>
+              <tr key={item.id}>
                 <td className="border px-2 py-1">{new Date(item.date).toLocaleDateString()}</td>
                 <td className="border px-2 py-1">{item.value}</td>
               </tr>
