@@ -7,12 +7,16 @@ export default function Home() {
   const [newUsername, setNewUsername] = useState("");
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [profilesLoading, setProfilesLoading] = useState(false);
+  const [profileActionLoading, setProfileActionLoading] = useState(false);
 
   // Fetch all profiles
   useEffect(() => {
+    setProfilesLoading(true);
     fetch("/api/profile")
       .then((res) => res.json())
-      .then(setProfiles);
+      .then(setProfiles)
+      .finally(() => setProfilesLoading(false));
   }, []);
 
   // Fetch today's count when username changes
@@ -29,7 +33,7 @@ export default function Home() {
   const handleProfile = async (e) => {
     e.preventDefault();
     if (!newUsername) return;
-    setLoading(true);
+    setProfileActionLoading(true);
     const res = await fetch("/api/profile", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -38,9 +42,10 @@ export default function Home() {
     const profile = await res.json();
     setUsername(profile.username);
     setNewUsername("");
-    setLoading(false);
+    setProfileActionLoading(false);
     // Refresh profiles
-    fetch("/api/profile").then((res) => res.json()).then(setProfiles);
+    setProfilesLoading(true);
+    fetch("/api/profile").then((res) => res.json()).then(setProfiles).finally(() => setProfilesLoading(false));
   };
 
   // Increment count
@@ -77,10 +82,13 @@ export default function Home() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           className="border rounded px-2 py-1"
+          disabled={profilesLoading}
         >
-          <option value="">Select profile</option>
+          <option value="">
+            {profilesLoading ? "Loading profiles..." : "Select profile"}
+          </option>
           {profiles.map((p) => (
-            <option key={p.id} value={p.username}>
+            <option key={p._id} value={p.username}>
               {p.username}
             </option>
           ))}
@@ -91,28 +99,55 @@ export default function Home() {
           value={newUsername}
           onChange={(e) => setNewUsername(e.target.value)}
           className="border rounded px-2 py-1"
+          disabled={profileActionLoading}
         />
-        <button type="submit" className="bg-blue-500 text-white px-3 py-1 rounded">
-          Add / Select
+        <button 
+          type="submit" 
+          className="bg-blue-500 text-white px-3 py-1 rounded flex items-center gap-2"
+          disabled={profileActionLoading}
+        >
+          {profileActionLoading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Creating...
+            </>
+          ) : (
+            "Add / Select"
+          )}
         </button>
       </form>
       {username && (
         <div className="flex flex-col items-center gap-4">
           <div className="text-lg">Hello, <b>{username}</b>!</div>
-          <div className="text-4xl font-mono">{loading ? "..." : count}</div>
+          <div className="text-4xl font-mono">
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+                Loading...
+              </div>
+            ) : (
+              count
+            )}
+          </div>
           <div className="flex gap-2">
             <button
               onClick={handleDecrement}
-              className="bg-red-500 text-white px-4 py-2 rounded text-lg"
+              className="bg-red-500 text-white px-4 py-2 rounded text-lg flex items-center gap-2"
               disabled={loading}
             >
+              {loading && (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              )}
               -1
             </button>
             <button
               onClick={handleIncrement}
-              className="bg-green-500 text-white px-4 py-2 rounded text-lg"
+              className="bg-green-500 text-white px-4 py-2 rounded text-lg flex items-center gap-2"
               disabled={loading}
             >
+              {loading && (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              )}
               +1
             </button>
           </div>

@@ -1,45 +1,30 @@
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-import path from 'path';
+import mongoose from 'mongoose';
 
-let db = null;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://rootchris:upbVOiDwMiSNj1JH@cluster0.zmxzevh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
-async function getDb() {
-  if (db) {
-    return db;
-  }
-
-  // Create database file in the project root
-  const dbPath = path.join(process.cwd(), 'data.sqlite');
-  
-  db = await open({
-    filename: dbPath,
-    driver: sqlite3.Database
-  });
-
-  // Create tables if they don't exist
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS profiles (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT UNIQUE NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS counts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      profile_id INTEGER NOT NULL,
-      date TEXT NOT NULL,
-      value INTEGER DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(profile_id, date),
-      FOREIGN KEY (profile_id) REFERENCES profiles (id)
-    )
-  `);
-
-  return db;
+if (!MONGODB_URI) {
+  throw new Error('Please define the MONGODB_URI environment variable');
 }
 
-export default getDb; 
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function dbConnect() {
+  if (cached.conn) {
+    return cached.conn;
+  }
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGODB_URI, {
+      bufferCommands: false,
+    }).then((mongoose) => {
+      return mongoose;
+    });
+  }
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
+
+export default dbConnect; 

@@ -1,43 +1,24 @@
 import { NextResponse } from 'next/server';
-import getDb from '../../../lib/dbConnect';
+import dbConnect from '../../../lib/dbConnect';
+import Profile from '../../../lib/models/Profile';
 
 // Create or get profile
 export async function POST(request) {
-  const db = await getDb();
+  await dbConnect();
   const { username } = await request.json();
-  
   if (!username) {
     return NextResponse.json({ error: 'Username is required' }, { status: 400 });
   }
-
-  try {
-    // Check if profile exists
-    const existingProfile = await db.get('SELECT * FROM profiles WHERE username = ?', [username]);
-    
-    if (existingProfile) {
-      return NextResponse.json(existingProfile);
-    }
-
-    // Create new profile
-    const result = await db.run('INSERT INTO profiles (username) VALUES (?)', [username]);
-    const newProfile = await db.get('SELECT * FROM profiles WHERE id = ?', [result.lastID]);
-    
-    return NextResponse.json(newProfile);
-  } catch (error) {
-    console.error('Database error:', error);
-    return NextResponse.json({ error: 'Database error' }, { status: 500 });
+  let profile = await Profile.findOne({ username });
+  if (!profile) {
+    profile = await Profile.create({ username });
   }
+  return NextResponse.json(profile);
 }
 
 // Get all profiles
 export async function GET() {
-  const db = await getDb();
-  
-  try {
-    const profiles = await db.all('SELECT * FROM profiles ORDER BY created_at DESC');
-    return NextResponse.json(profiles);
-  } catch (error) {
-    console.error('Database error:', error);
-    return NextResponse.json({ error: 'Database error' }, { status: 500 });
-  }
+  await dbConnect();
+  const profiles = await Profile.find();
+  return NextResponse.json(profiles);
 } 

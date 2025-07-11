@@ -24,7 +24,10 @@ function ProfileContent() {
       <Link href="/" className="text-blue-600 underline">Back to Home</Link>
       <h2 className="text-lg font-semibold mt-4">Count History</h2>
       {loading ? (
-        <div>Loading...</div>
+        <div className="flex items-center gap-2">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+          Loading history...
+        </div>
       ) : (
         <table className="border mt-2">
           <thead>
@@ -38,7 +41,7 @@ function ProfileContent() {
               <tr><td colSpan={2} className="text-center">No data</td></tr>
             )}
             {history.map((item) => (
-              <tr key={item.id}>
+              <tr key={item._id}>
                 <td className="border px-2 py-1">{new Date(item.date).toLocaleDateString()}</td>
                 <td className="border px-2 py-1">{item.value}</td>
               </tr>
@@ -52,7 +55,14 @@ function ProfileContent() {
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+          Loading profile...
+        </div>
+      </div>
+    }>
       <ProfileContent />
     </Suspense>
   );
